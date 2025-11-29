@@ -1,6 +1,9 @@
-use std::path::{Path,PathBuf};
+use std::error::Error;
+use std::fmt::{write, Debug, Display, Formatter, Write};
+use std::ops::Deref;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
-use crate::config::config;
+use crate::config::{config, Config, Camera};
 
 enum FileType{
     Photo(String),
@@ -10,6 +13,37 @@ enum FileType{
 struct MediaFile{
     pub path: PathBuf,
     pub file_type: FileType,
+}
+
+#[derive(Debug)]
+struct MediaNotFoundError{
+    cameras: Vec<Camera>
+}
+
+impl MediaNotFoundError{
+    fn new()-> Self{
+        let config_=match config.try_read() { 
+            Ok(cfg)=>cfg,
+            Err(E)=>return MediaNotFoundError{
+                cameras: Vec::new()
+            }
+        };
+        return MediaNotFoundError{
+            cameras: config_.cameras.clone()
+        }
+    }
+}
+impl Display for MediaNotFoundError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let mut camera_list="".to_string();
+        for camera in self.cameras.iter().as_slice(){
+            camera_list+=camera.to_string().as_str();
+        }
+        write!(f, "Can't find video. Video roots in config file: \n {}", camera_list)
+    }
+}
+
+impl Error for MediaNotFoundError{
 }
 
 // List all videos
@@ -32,7 +66,7 @@ fn list_videos(src: PathBuf)->Result<Vec<MediaFile>,Box<dyn std::error::Error>> 
                     Some(ext) => {ext}
                     None => continue
                 };
-                if config.try_lock()?.video_exts.contains(&ext.to_string()) {
+                if config.try_read()?.video_exts.contains(&ext.to_string()) {
                     media_files.push(MediaFile{
                         path: path.to_path_buf(),
                         file_type: FileType::Video(ext.to_string())
@@ -48,19 +82,14 @@ fn list_videos(src: PathBuf)->Result<Vec<MediaFile>,Box<dyn std::error::Error>> 
 
 }
 
-fn find_video() -> Result<Vec<String>, Box<dyn std::error::Error>> {
-    for camera in config.try_lock()?.cameras {
+fn find_video() -> Result<Vec<MediaFile>, Box<dyn std::error::Error>> {
+    for camera in config.try_read()?.cameras.clone() {
         let pathbuf = PathBuf::from_str(camera.video_root.as_str())?;
         let path = pathbuf.as_path();
 
         if path.exists() {
-            break;
+            return list_videos(path.to_path_buf());
         }
     }
-
-    Ok(())
-}
-
-fn copyfile(src: String, dst: String, file_type: FileType) -> Result<(), io::Error>{
-
+    Err(Box::new(MediaNotFoundError::new()))
 }
