@@ -3,6 +3,8 @@
 mod copy;
 
 mod config;
+mod hash;
+
 #[tauri::command]
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
