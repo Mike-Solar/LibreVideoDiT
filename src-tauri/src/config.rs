@@ -3,6 +3,8 @@ use std::fs::File;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use std::sync::{Mutex, RwLock};
+use crate::camera::CameraType;
+
 lazy_static!(
     pub static ref config: RwLock<Config> = RwLock::new( match Config::load(){
         Ok(cfg)=>cfg,
@@ -13,7 +15,7 @@ lazy_static!(
 
 #[derive(Deserialize, Serialize)]
 pub struct Config {
-    pub cameras: Vec<Camera>,
+    pub cameras: Vec<CameraType>,
     pub video_exts: Vec<String>,
     pub photo_exts: Vec<String>,
 }
@@ -28,31 +30,12 @@ impl Clone for Config{
     }
 }
 
-#[derive(Deserialize, Serialize, Debug)]
-pub struct Camera{
-    pub camera_type: String,
-    pub video_root: String,
-}
-
-impl Clone for Camera{
-    fn clone(&self) -> Self {
-        return Camera{
-            camera_type: self.camera_type.clone(),
-            video_root: self.video_root.clone()
-        }
-    }
-}
-impl Display for Camera{
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Camera:{:10}, Video Root: {}", self.camera_type, self.video_root)
-    }
-}
 
 impl Config {
 
     pub fn new()->Self{
         return Config{
-            cameras: Vec::new(), 
+            cameras: Vec::new(),
             video_exts: Vec::new(), 
             photo_exts: Vec::new()
         };

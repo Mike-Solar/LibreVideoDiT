@@ -1,9 +1,11 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 
-mod copy;
+mod lookup;
 
 mod config;
 mod hash;
+mod sdcard;
+mod camera;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -17,4 +19,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![greet])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+pub fn copy_files(dest_path: String){
+    
 }

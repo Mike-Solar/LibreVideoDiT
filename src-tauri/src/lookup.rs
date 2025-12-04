@@ -3,7 +3,8 @@ use std::fmt::{write, Debug, Display, Formatter, Write};
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
-use crate::config::{config, Config, Camera};
+use crate::config::{config, Config};
+use crate::camera::CameraType;
 
 enum FileType{
     Photo(String),
@@ -17,7 +18,7 @@ struct MediaFile{
 
 #[derive(Debug)]
 struct MediaNotFoundError{
-    cameras: Vec<Camera>
+    cameras: Vec<CameraType>
 }
 
 impl MediaNotFoundError{
