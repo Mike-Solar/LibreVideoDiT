@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct CameraType{
     pub camera_type: String,
     pub video_root: String,
@@ -9,21 +9,13 @@ pub struct CameraType{
 
 impl CameraType{
     pub fn new()->Self{
-        return CameraType{
+        CameraType{
             camera_type: String::new(),
             video_root: String::new()
         }
     }
 }
 
-impl Clone for CameraType{
-    fn clone(&self) -> Self {
-        return CameraType{
-            camera_type: self.camera_type.clone(),
-            video_root: self.video_root.clone()
-        }
-    }
-}
 impl Display for CameraType{
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "CameraType:{:10}, Video Root: {}", self.camera_type, self.video_root)

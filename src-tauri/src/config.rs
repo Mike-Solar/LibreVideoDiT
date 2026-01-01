@@ -5,29 +5,16 @@ use serde::{Deserialize, Serialize};
 use std::sync::{Mutex, RwLock};
 use crate::camera::CameraType;
 
-lazy_static!(
-    pub static ref config: RwLock<Config> = RwLock::new( match Config::load(){
-        Ok(cfg)=>cfg,
-        Err(error)=>{Config::new()}
-    });
-);
+lazy_static! {
+    pub static ref CONFIG: RwLock<Config> = RwLock::new( Config::load().unwrap_or_else(|error| {Config::new()}));
+}
 
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 pub struct Config {
     pub cameras: Vec<CameraType>,
     pub video_exts: Vec<String>,
     pub photo_exts: Vec<String>,
-}
-
-impl Clone for Config{
-    fn clone(&self) -> Self {
-        return Config{
-            cameras: Vec::from(self.cameras.iter().as_slice()),
-            video_exts:  Vec::from(self.video_exts.iter().as_slice()),
-            photo_exts:  Vec::from(self.photo_exts.iter().as_slice()),
-        }
-    }
 }
 
 
