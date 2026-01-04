@@ -1,0 +1,24 @@
+{
+  "destination_root": "/home/user/MediaImports",
+  "video_exts": ["mp4", "mov", "mxf", "mts", "m2ts"],
+  "photo_exts": ["jpg", "jpeg", "tif", "tiff", "dng", "heic"],
+  "cameras": [
+    {
+      "name": "Sony A7SIII",
+      "signature_paths": ["DCIM", "PRIVATE/M4ROOT"],
+      "media_roots": ["DCIM", "PRIVATE/M4ROOT"]
+    },
+    {
+      "name": "Canon R5",
+      "signature_paths": ["DCIM", "PRIVATE/AVCHD"],
+      "media_roots": ["DCIM", "PRIVATE/AVCHD"]
+    }
+  ],
+  "sd_cards": [
+    {
+      "root": "/media/user/SDCARD_A",
+      "target_subdir": "Project_A",
+      "camera_override": null
+    }
+  ]
+}

@@ -1,20 +1,27 @@
-use std::fmt::{write, Display, Formatter};
 use std::fs::File;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
-use std::sync::{Mutex, RwLock};
-use crate::camera::CameraType;
+use std::sync::RwLock;
+use crate::camera::CameraProfile;
 
 lazy_static! {
     pub static ref CONFIG: RwLock<Config> = RwLock::new( Config::load().unwrap_or_else(|error| {Config::new()}));
 }
 
+#[derive(Deserialize, Serialize, Clone)]
+pub struct SdCardMapping {
+    pub root: String,
+    pub target_subdir: String,
+    pub camera_override: Option<String>,
+}
 
 #[derive(Deserialize, Serialize, Clone)]
 pub struct Config {
-    pub cameras: Vec<CameraType>,
+    pub destination_root: String,
+    pub cameras: Vec<CameraProfile>,
     pub video_exts: Vec<String>,
     pub photo_exts: Vec<String>,
+    pub sd_cards: Vec<SdCardMapping>,
 }
 
 
@@ -22,9 +29,11 @@ impl Config {
 
     pub fn new()->Self{
         return Config{
+            destination_root: String::new(),
             cameras: Vec::new(),
             video_exts: Vec::new(), 
-            photo_exts: Vec::new()
+            photo_exts: Vec::new(),
+            sd_cards: Vec::new(),
         };
     }
     pub fn load() -> Result<Config, Box<dyn std::error::Error>> {

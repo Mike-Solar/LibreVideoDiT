@@ -1,6 +1,29 @@
-# Tauri + Vue + TypeScript
+# LibreVideoDiT
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+This app imports photos and videos from camera SD cards, classifies them by camera model, and copies them into a destination folder.
+
+## Config
+
+Create `config.json` in the project root (see `config.json.example`) to describe SD card signatures, media roots, and target folders.
+
+Key fields:
+
+- `destination_root`: where imported media will be placed.
+- `video_exts` / `photo_exts`: extensions to copy (case-insensitive).
+- `cameras`: each camera includes `signature_paths` to detect a card and optional `media_roots` to scan.
+- `sd_cards`: optional mapping for a specific SD card mount path to a subfolder.
+
+## Tauri Command
+
+Call the command from the frontend:
+
+```ts
+import { invoke } from "@tauri-apps/api/core";
+
+const report = await invoke("import_sd_card", {
+  sdCardPath: "/media/user/SDCARD_A",
+});
+```
 
 ## Recommended IDE Setup
 
