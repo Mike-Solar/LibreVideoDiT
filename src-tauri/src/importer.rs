@@ -45,7 +45,7 @@ pub fn import_sd_card(sd_card_path: String) -> Result<ImportReport, Box<dyn std:
             "SD card structure did not match any configured camera",
         )));
     }
-    let dest_root = PathBuf::from(config.destination_root);
+    let dest_root = PathBuf::from(&config.destination_root);
     let target_base = match &mapping {
         Some(m) if !m.target_subdir.trim().is_empty() => dest_root.join(&m.target_subdir),
         _ => dest_root,

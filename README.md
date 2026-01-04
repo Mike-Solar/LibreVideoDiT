@@ -80,6 +80,11 @@ cd src-tauri
 cargo test
 ```
 
+## CI 与发布
+
+- CI：GitHub Actions 会在 Linux 和 Windows 上运行前端构建与 Rust 测试。
+- 发布：推送 `v*` 标签（例如 `v0.1.0`）会触发多平台构建并创建草稿 Release。
+
 ## 已知限制
 
 - 视频相机型号目前仅从同名 `.xmp` 边车文件读取。

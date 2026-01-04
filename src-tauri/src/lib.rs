@@ -22,6 +22,6 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
-pub fn copy_files(dest_path: String){
+pub fn copy_files(_dest_path: String){
     
 }
