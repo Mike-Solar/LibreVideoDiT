@@ -340,3 +340,70 @@ fn unique_path(original: &Path) -> PathBuf {
     }
     original.to_path_buf()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashSet;
+    use tempfile::tempdir;
+
+    #[test]
+    fn sanitize_component_collapses_non_alnum() {
+        let value = "Sony A7SIII/Body";
+        let sanitized = sanitize_component(value);
+        assert_eq!(sanitized, "Sony_A7SIII_Body");
+    }
+
+    #[test]
+    fn extract_xmp_value_reads_attribute() {
+        let text = r#"<rdf:Description tiff:Model="FX3" tiff:Make="Sony"></rdf:Description>"#;
+        let model = extract_xmp_value(text, "Model");
+        assert_eq!(model, Some("FX3".to_string()));
+    }
+
+    #[test]
+    fn unique_path_adds_suffix_when_exists() {
+        let dir = tempdir().expect("tempdir");
+        let path = dir.path().join("clip.mp4");
+        fs::write(&path, b"data").expect("write file");
+        let unique = unique_path(&path);
+        assert_eq!(unique.file_name().unwrap().to_string_lossy(), "clip_1.mp4");
+    }
+
+    #[test]
+    fn list_media_files_scans_roots() {
+        let dir = tempdir().expect("tempdir");
+        let dcim = dir.path().join("DCIM");
+        let private = dir.path().join("PRIVATE/M4ROOT");
+        fs::create_dir_all(&dcim).expect("mkdir");
+        fs::create_dir_all(&private).expect("mkdir");
+        fs::write(dcim.join("photo.JPG"), b"photo").expect("write photo");
+        fs::write(private.join("video.MP4"), b"video").expect("write video");
+        fs::write(dir.path().join("ignore.txt"), b"skip").expect("write text");
+
+        let profile = CameraProfile {
+            name: "TestCam".to_string(),
+            signature_paths: vec![],
+            media_roots: vec!["DCIM".to_string(), "PRIVATE/M4ROOT".to_string()],
+        };
+        let mut exts = HashSet::new();
+        exts.insert("jpg".to_string());
+        exts.insert("mp4".to_string());
+
+        let files = list_media_files(dir.path(), &Some(profile), &exts).expect("scan files");
+        assert_eq!(files.len(), 2);
+    }
+
+    #[test]
+    fn read_xmp_model_from_sidecar() {
+        let dir = tempdir().expect("tempdir");
+        let video = dir.path().join("clip.mp4");
+        fs::write(&video, b"video").expect("write video");
+        let xmp = dir.path().join("clip.xmp");
+        let xmp_content = r#"<rdf:Description tiff:Make="Canon" tiff:Model="R5"></rdf:Description>"#;
+        fs::write(&xmp, xmp_content).expect("write xmp");
+
+        let model = read_xmp_model(&video).expect("model");
+        assert_eq!(model, "Canon R5");
+    }
+}

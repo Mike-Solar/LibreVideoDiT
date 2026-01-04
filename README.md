@@ -1,21 +1,54 @@
 # LibreVideoDiT
 
-This app imports photos and videos from camera SD cards, classifies them by camera model, and copies them into a destination folder.
+一个用于导入相机卡素材的工具：自动从 SD 卡拷贝视频和照片到指定目录，并按相机型号分类。支持通过 SD 卡结构识别相机，且可为每张卡指定目标文件夹。
 
-## Config
+## 功能
 
-Create `config.json` in the project root (see `config.json.example`) to describe SD card signatures, media roots, and target folders.
+- 读取 SD 卡文件结构识别相机类型（通过 `config.json` 配置）。
+- 从文件元数据读取相机型号，按型号建文件夹分类。
+- 可为特定 SD 卡设置固定目标子目录。
+- 支持视频/照片扩展名过滤与去重拷贝（哈希校验）。
 
-Key fields:
+## 配置
 
-- `destination_root`: where imported media will be placed.
-- `video_exts` / `photo_exts`: extensions to copy (case-insensitive).
-- `cameras`: each camera includes `signature_paths` to detect a card and optional `media_roots` to scan.
-- `sd_cards`: optional mapping for a specific SD card mount path to a subfolder.
+在项目根目录创建 `config.json`，参考 `config.json.example`。
 
-## Tauri Command
+字段说明：
 
-Call the command from the frontend:
+- `destination_root`: 导入目标根目录。
+- `video_exts` / `photo_exts`: 需要拷贝的扩展名（不区分大小写）。
+- `cameras`: 相机配置，包含 SD 卡结构签名与媒体目录。
+  - `signature_paths`: 用于识别相机 SD 卡的关键路径集合。
+  - `media_roots`: 需要扫描的媒体目录（可为空，默认扫描整卡）。
+- `sd_cards`: 可选，绑定特定 SD 卡挂载路径到固定子目录。
+
+示例：
+
+```json
+{
+  "destination_root": "/home/user/MediaImports",
+  "video_exts": ["mp4", "mov", "mxf", "mts", "m2ts"],
+  "photo_exts": ["jpg", "jpeg", "tif", "tiff", "dng", "heic"],
+  "cameras": [
+    {
+      "name": "Sony A7SIII",
+      "signature_paths": ["DCIM", "PRIVATE/M4ROOT"],
+      "media_roots": ["DCIM", "PRIVATE/M4ROOT"]
+    }
+  ],
+  "sd_cards": [
+    {
+      "root": "/media/user/SDCARD_A",
+      "target_subdir": "Project_A",
+      "camera_override": null
+    }
+  ]
+}
+```
+
+## 使用方式
+
+当前通过 Tauri 命令调用导入流程：
 
 ```ts
 import { invoke } from "@tauri-apps/api/core";
@@ -25,6 +58,33 @@ const report = await invoke("import_sd_card", {
 });
 ```
 
-## Recommended IDE Setup
+返回的 `report` 会包含拷贝数量、跳过数量、失败数量与错误列表。
 
-- [VS Code](https://code.visualstudio.com/) + [Vue - Official](https://marketplace.visualstudio.com/items?itemName=Vue.volar) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+## 开发
+
+```bash
+npm install
+npm run dev
+```
+
+运行 Tauri：
+
+```bash
+npm run tauri dev
+```
+
+## 测试
+
+```bash
+cd src-tauri
+cargo test
+```
+
+## 已知限制
+
+- 视频相机型号目前仅从同名 `.xmp` 边车文件读取。
+- 未配置 `signature_paths` 的相机将不会被识别。
+
+## 推荐 IDE
+
+- VS Code + Vue Official + Tauri + rust-analyzer
